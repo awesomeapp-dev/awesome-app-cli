@@ -1,4 +1,4 @@
-use crate::exec::{exec_cmd_args, exec_to_stdout, prompt};
+use crate::exec::{prompt, spawn_and_wait, spawn_output};
 use crate::prelude::*;
 use crate::utils::{path_joins, safer_remove_dir_all};
 use crate::Error;
@@ -60,7 +60,7 @@ pub fn run_new(sub_cmd: &ArgMatches) -> Result<()> {
 
 	// --- Do the git clone
 	println!("Cloning rust-awesome- (base app template)");
-	exec_cmd_args(None, "git", &["clone", GIT_TMPL_BASE, &app_dir_name], false)?;
+	spawn_and_wait(None, "git", &["clone", GIT_TMPL_BASE, &app_dir_name], false)?;
 
 	// --- Replace the parts now
 	replace_parts(
@@ -121,7 +121,7 @@ fn replace_parts(dir: &Path, conf: Conf) -> Result<()> {
 // region:    --- Utils
 
 fn check_git() -> Result<()> {
-	exec_to_stdout(None, "git", &["--version"], false).or_else(|_| Err(Error::GitNotPresent))?;
+	spawn_output(None, "git", &["--version"], false).or_else(|_| Err(Error::GitNotPresent))?;
 	Ok(())
 }
 // endregion: --- Utils

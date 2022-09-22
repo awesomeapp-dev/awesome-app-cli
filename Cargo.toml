@@ -10,7 +10,15 @@ homepage = "https://awesomeapp.org"
 repository = "https://github.com/rust-awesome-app/awesome-app"
 
 [dependencies]
+tokio = { version = "1", features = ["full"] }
 clap =  {version = "3", features = ["cargo"]}
 thiserror = "1"
 aho-corasick = "0.7"
 regex = "1.6"
+toml = "0.5"
+serde = "1"
+serde_derive = "1"
+sysinfo = "0.26"
+
+[dev_dependencies]
+anyhow = "1"

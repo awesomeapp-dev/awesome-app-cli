@@ -2,6 +2,12 @@ use crate::prelude::*;
 use std::fs;
 use std::path::{Path, PathBuf};
 
+mod x_toml;
+mod x_utils;
+
+// --- re-exports
+pub use x_utils::*;
+
 // region:    --- File & Path Utils
 const DELETE_MUST_CONTAINS_ANY_OF: &[&str; 1] = &[".git"];
 

@@ -1,17 +1,19 @@
-// #![allow(unused)]
-
+#![allow(unused)]
 use crate::prelude::*;
 use cmd_app::cmd_app;
 use run_dev::run_dev;
 use run_new::run_new;
 
 mod cmd_app;
+mod config;
 mod error;
 mod exec;
 mod prelude;
 mod run_dev;
 mod run_new;
 mod utils;
+
+pub use cmd_app::VERSION;
 
 fn main() {
 	match cmd_run() {

@@ -8,6 +8,7 @@ target/
 # --- Safety net
 dist/
 _*
+!src/_tests
 __pycache__/
 *.parquet
 *.map
