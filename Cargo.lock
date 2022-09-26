@@ -36,7 +36,7 @@ checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
 
 [[package]]
 name = "awesome-app"
-version = "0.1.1-SNAPSHOT"
+version = "0.1.1"
 dependencies = [
  "aho-corasick",
  "anyhow",
@@ -229,9 +229,9 @@ dependencies = [
 
 [[package]]
 name = "ntapi"
-version = "0.3.7"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c28774a7fd2fbb4f0babd8237ce554b73af68021b5f695a3cebd6c59bac0980f"
+checksum = "bc51db7b362b205941f71232e56c625156eb9a929f8cf74a428fd5bc094a4afc"
 dependencies = [
  "winapi",
 ]
@@ -411,9 +411,9 @@ checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
 
 [[package]]
 name = "syn"
-version = "1.0.100"
+version = "1.0.101"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "52205623b1b0f064a4e71182c3b18ae902267282930c6d5462c91b859668426e"
+checksum = "e90cde112c4b9690b8cbe810cba9ddd8bc1d7472e2cae317b69e9438c1cba7d2"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -422,9 +422,9 @@ dependencies = [
 
 [[package]]
 name = "sysinfo"
-version = "0.26.3"
+version = "0.26.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "49086f670c15221b510c3f8c47e04e49714c56820d5ca78e2f58419e9fbb0f1b"
+checksum = "7890fff842b8db56f2033ebee8f6efe1921475c3830c115995552914fb967580"
 dependencies = [
  "cfg-if",
  "core-foundation-sys",
