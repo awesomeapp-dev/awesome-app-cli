@@ -46,7 +46,7 @@ pub trait XTake {
 impl<S> XTake for S {
 	fn x_take<T>(&mut self, k: &str) -> Result<Option<T>>
 	where
-		Self: XTakeInto<T>,
+		S: XTakeInto<T>,
 	{
 		XTakeInto::x_take_into(self, k)
 	}
@@ -65,7 +65,7 @@ pub trait XTakeVal {
 impl<S> XTakeVal for S {
 	fn x_take_val<T>(&mut self, k: &str) -> Result<T>
 	where
-		Self: XTakeInto<T>,
+		S: XTakeInto<T>,
 	{
 		let val: Option<T> = XTakeInto::x_take_into(self, k)?;
 		val.ok_or_else(|| Error::XtakePropNotFound(k.to_string()))
