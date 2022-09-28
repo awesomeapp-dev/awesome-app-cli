@@ -1,6 +1,6 @@
 [package]
 name = "awesome-app"
-version = "0.1.1"
+version = "0.1.2-SNAPSHOST"
 authors = ["Jeremy Chone <jeremy.chone@gmail.com>"]
 license = "MIT OR Apache-2.0"
 description = "Rust CLI to create Awesome Desktop And Cloud Applications with Rust."
