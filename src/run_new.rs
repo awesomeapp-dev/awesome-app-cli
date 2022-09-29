@@ -60,7 +60,13 @@ pub fn run_new(sub_cmd: &ArgMatches) -> Result<()> {
 
 	// --- Do the git clone
 	println!("Cloning rust-awesome- (base app template)");
-	spawn_and_wait(None, "git", &["clone", GIT_TMPL_BASE, &app_dir_name], false)?;
+	// git clone --depth 1 --branch <tag_name> <repo_url>
+	spawn_and_wait(
+		None,
+		"git",
+		&["clone", "--depth", "1", "--branch", "main", GIT_TMPL_BASE, &app_dir_name],
+		false,
+	)?;
 
 	// --- Replace the parts now
 	replace_parts(
