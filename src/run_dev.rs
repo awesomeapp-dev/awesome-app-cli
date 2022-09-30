@@ -1,7 +1,6 @@
 use crate::config::ensure_config;
 use crate::exec::spawn_and_wait;
 use crate::prelude::*;
-use crate::utils::XAs;
 use clap::ArgMatches;
 use std::collections::HashMap;
 use std::path::Path;
@@ -117,9 +116,9 @@ async fn terminate_process_and_children(sys: &mut System, name: &str, proc: &mut
 		};
 
 		// --- Terminate the children
-		for (pid, name) in children {
+		for (pid, _) in children {
 			if let Some(process) = sys.process(pid.clone()) {
-				let del = process.kill();
+				let _ = process.kill();
 			}
 		}
 	}

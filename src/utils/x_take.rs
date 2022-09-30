@@ -1,29 +1,5 @@
 use crate::prelude::{Error, Result};
 
-// region:    --- XInto/XAs
-/// Application trait for type translation with error handling.
-pub trait XInto<O> {
-	fn x_into(self) -> Result<O>;
-}
-
-/// Turbofishable method
-pub trait XAs {
-	fn x_as<O>(self) -> Result<O>
-	where
-		Self: XInto<O>;
-}
-
-// Blanket implementation (allows turbofish)
-impl<T> XAs for T {
-	fn x_as<O>(self) -> Result<O>
-	where
-		T: XInto<O>,
-	{
-		XInto::x_into(self)
-	}
-}
-// endregion: --- XInto/XAs
-
 // region:    --- XTake
 
 /// Remove and return the Option<value> for a given type and key.

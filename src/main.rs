@@ -1,4 +1,4 @@
-#![allow(unused)]
+// #![allow(unused)]
 use crate::prelude::*;
 use cmd_app::cmd_app;
 use run_dev::run_dev;

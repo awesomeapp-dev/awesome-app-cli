@@ -1,7 +1,7 @@
 //! This is the module Awesome.toml
 
 use crate::prelude::*;
-use crate::utils::{XAs, XInto, XTake, XTakeVal};
+use crate::utils::{XTake, XTakeVal};
 use crate::VERSION;
 use std::fs;
 use std::path::Path;
@@ -37,7 +37,7 @@ awesome_app_version = "{VERSION}"
 	let toml_str = fs::read_to_string(&awesome_file)?;
 
 	match toml::from_str::<Value>(&toml_str) {
-		Ok(root) => root.x_as(),
+		Ok(root) => Config::try_from(root),
 		Err(ex) => Err(Error::ConfigParsingError(format!("{}", ex))),
 	}
 }
@@ -48,10 +48,11 @@ pub struct Config {
 	pub dev_runners: Option<Vec<Runner>>,
 }
 
-impl XInto<Config> for Value {
-	fn x_into(mut self) -> Result<Config> {
-		let cli_version = self.x_take::<String>("cli_version")?;
-		let runners_raw = self.get_mut("runners").map(|runners| runners.x_take::<Vec<Value>>("dev"));
+impl TryFrom<Value> for Config {
+	type Error = Error;
+	fn try_from(mut val: Value) -> Result<Config> {
+		let cli_version = val.x_take::<String>("cli_version")?;
+		let runners_raw = val.get_mut("runners").map(|runners| runners.x_take::<Vec<Value>>("dev"));
 
 		// TODO: need to cleans this up
 		let runners_raw = match runners_raw {
@@ -61,7 +62,7 @@ impl XInto<Config> for Value {
 		.flatten();
 
 		// Option<Result<Vec<Runner>>>
-		let dev_runners = runners_raw.map(|v| v.into_iter().map(|r| r.x_as::<Runner>()).collect::<Result<Vec<_>>>());
+		let dev_runners = runners_raw.map(|v| v.into_iter().map(|v| Runner::try_from(v)).collect::<Result<Vec<_>>>());
 
 		// Option<Vec<Runner>>
 		let dev_runners = match dev_runners {
@@ -84,15 +85,16 @@ pub struct Runner {
 	pub end_all_on_exit: bool, // default to false
 }
 
-impl XInto<Runner> for Value {
-	fn x_into(mut self) -> Result<Runner> {
-		let name = self.x_take_val::<String>("name")?;
-		let working_dir = self.x_take::<String>("working_dir")?;
-		let cmd = self.x_take_val::<String>("cmd")?;
-		let args = self.x_take::<Vec<String>>("args")?;
-		let wait_before = self.x_take::<u64>("wait_before")?.unwrap_or(0);
-		let concurrent = self.x_take::<bool>("concurrent")?.unwrap_or(false);
-		let end_all_on_exit = self.x_take::<bool>("end_all_on_exit")?.unwrap_or(false);
+impl TryFrom<Value> for Runner {
+	type Error = Error;
+	fn try_from(mut val: Value) -> Result<Runner> {
+		let name = val.x_take_val::<String>("name")?;
+		let working_dir = val.x_take::<String>("working_dir")?;
+		let cmd = val.x_take_val::<String>("cmd")?;
+		let args = val.x_take::<Vec<String>>("args")?;
+		let wait_before = val.x_take::<u64>("wait_before")?.unwrap_or(0);
+		let concurrent = val.x_take::<bool>("concurrent")?.unwrap_or(false);
+		let end_all_on_exit = val.x_take::<bool>("end_all_on_exit")?.unwrap_or(false);
 
 		// TODO: Error when concurrent = false, and end_all_on_exit = true (would not make much sense)
 
