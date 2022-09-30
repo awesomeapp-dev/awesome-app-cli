@@ -1,3 +1,4 @@
+use crate::config::ensure_config;
 use crate::exec::{prompt, spawn_and_wait, spawn_output};
 use crate::prelude::*;
 use crate::utils::{path_joins, safer_remove_dir_all};
@@ -65,10 +66,10 @@ pub fn run_new(sub_cmd: &ArgMatches) -> Result<()> {
 		None,
 		"git",
 		&["clone", "--depth", "1", "--branch", "main", GIT_TMPL_BASE, &app_dir_name],
-		false,
+		true,
 	)?;
 
-	// --- Replace the parts now
+	// --- Replace the parts
 	replace_parts(
 		app_dir,
 		Conf {
@@ -77,10 +78,18 @@ pub fn run_new(sub_cmd: &ArgMatches) -> Result<()> {
 		},
 	)?;
 
+	// --- Add the Awesome.toml
+	ensure_config(app_dir)?;
+
 	// --- Remove the git folder
 	let git_dir = app_dir.join(GIT_DIR);
 	println!("Delete template git directory ({})", git_dir.to_string_lossy());
 	safer_remove_dir_all(&git_dir)?;
+
+	// --- Do the git init and initial
+	spawn_and_wait(Some(app_dir), "git", &["init", "."], true)?;
+	spawn_and_wait(Some(app_dir), "git", &["add", "-A", "."], true)?;
+	spawn_and_wait(Some(app_dir), "git", &["commit", "-a", "-m", ". initial"], true)?;
 
 	println!(
 		"
