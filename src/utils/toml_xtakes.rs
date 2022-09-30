@@ -1,10 +1,10 @@
-use super::{XTake, XTakeInto};
+use super::{XTake, XTakeImpl};
 use crate::prelude::*;
 use toml::Value;
 
 // region:    --- XTake
-impl XTakeInto<String> for Value {
-	fn x_take_into(&mut self, k: &str) -> Result<Option<String>> {
+impl XTakeImpl<String> for Value {
+	fn x_take_impl(&mut self, k: &str) -> Result<Option<String>> {
 		let v = self.get(k).map(|v| W(v).try_into());
 		match v {
 			None => Ok(None),
@@ -13,8 +13,8 @@ impl XTakeInto<String> for Value {
 	}
 }
 
-impl XTakeInto<bool> for Value {
-	fn x_take_into(&mut self, k: &str) -> Result<Option<bool>> {
+impl XTakeImpl<bool> for Value {
+	fn x_take_impl(&mut self, k: &str) -> Result<Option<bool>> {
 		let v = self.get(k).map(|v| W(v).try_into());
 		match v {
 			None => Ok(None),
@@ -23,8 +23,8 @@ impl XTakeInto<bool> for Value {
 	}
 }
 
-impl XTakeInto<u64> for Value {
-	fn x_take_into(&mut self, k: &str) -> Result<Option<u64>> {
+impl XTakeImpl<u64> for Value {
+	fn x_take_impl(&mut self, k: &str) -> Result<Option<u64>> {
 		let v = self.get(k).map(|v| W(v).try_into());
 		match v {
 			None => Ok(None),
@@ -33,8 +33,8 @@ impl XTakeInto<u64> for Value {
 	}
 }
 
-impl XTakeInto<Vec<Value>> for Value {
-	fn x_take_into(&mut self, k: &str) -> Result<Option<Vec<Value>>> {
+impl XTakeImpl<Vec<Value>> for Value {
+	fn x_take_impl(&mut self, k: &str) -> Result<Option<Vec<Value>>> {
 		let v = self.get(k).map(|v| W(v).try_into());
 		match v {
 			None => Ok(None),
@@ -43,8 +43,8 @@ impl XTakeInto<Vec<Value>> for Value {
 	}
 }
 
-impl XTakeInto<Vec<String>> for Value {
-	fn x_take_into(&mut self, k: &str) -> Result<Option<Vec<String>>> {
+impl XTakeImpl<Vec<String>> for Value {
+	fn x_take_impl(&mut self, k: &str) -> Result<Option<Vec<String>>> {
 		let values = self.x_take::<Vec<Value>>(k)?;
 
 		let values = values.map(|vs| vs.into_iter().map(|v| W(v).try_into()).collect::<Result<Vec<String>>>());
