@@ -86,6 +86,12 @@ pub fn run_new(sub_cmd: &ArgMatches) -> Result<()> {
 	println!("Delete template git directory ({})", git_dir.to_string_lossy());
 	safer_remove_dir_all(&git_dir)?;
 
+	// --- Clear the Awesome.toml from the .gitignore
+	let gitignore_file = app_dir.join(".gitignore");
+	let content = fs::read_to_string(&gitignore_file)?;
+	let content = clear_awesome_toml_from_gitignore(&content);
+	fs::write(&gitignore_file, content)?;
+
 	// --- Do the git init and initial
 	spawn_and_wait(Some(app_dir), "git", &["init", "."], true)?;
 	spawn_and_wait(Some(app_dir), "git", &["add", "-A", "."], true)?;
@@ -133,6 +139,13 @@ fn replace_parts(dir: &Path, conf: Conf) -> Result<()> {
 	Ok(())
 }
 
+fn clear_awesome_toml_from_gitignore(content: &str) -> String {
+	let rx = Regex::new(r"(?m)^# --- Awesome.toml(.|\n)*^Awesome.toml\n\n").expect("Invalid regex");
+	let content = rx.replace(content.as_bytes(), "".as_bytes());
+	let content: &str = from_utf8(&content).unwrap();
+	content.to_string()
+}
+
 // region:    --- Utils
 
 fn check_git() -> Result<()> {
@@ -140,3 +153,9 @@ fn check_git() -> Result<()> {
 	Ok(())
 }
 // endregion: --- Utils
+
+// region:    --- Tests
+#[cfg(test)]
+#[path = "./_tests/tests_run_new.rs"]
+mod tests;
+// endregion: --- Tests
