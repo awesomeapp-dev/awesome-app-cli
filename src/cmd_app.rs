@@ -1,10 +1,10 @@
 use clap::{crate_version, Arg, Command};
 
-pub const VERSION: &str = &crate_version!();
+pub const VERSION: &str = crate_version!();
 
 pub fn cmd_app() -> Command {
 	Command::new("awesome-app")
-		.version(&VERSION[..])
+		.version(VERSION)
 		.about("Awesome Desktop App Scaffolder")
 		.subcommand(sub_new())
 		.subcommand(sub_dev())

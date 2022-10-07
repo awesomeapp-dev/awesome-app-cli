@@ -33,7 +33,10 @@ pub async fn run_dev(_sub_cmd: &ArgMatches) -> Result<()> {
 			println!("==== Running runner: {name}");
 
 			if runner.wait_before > 0 {
-				println!("Waiting {}ms (from runner {name}.wait_before property)", runner.wait_before);
+				println!(
+					"Waiting {}ms (from runner {name}.wait_before property)",
+					runner.wait_before
+				);
 				sleep(Duration::from_millis(runner.wait_before)).await;
 			}
 
@@ -46,13 +49,13 @@ pub async fn run_dev(_sub_cmd: &ArgMatches) -> Result<()> {
 				cmd_str
 			};
 
-			let args = runner.args.unwrap_or_else(|| Vec::new());
+			let args = runner.args.unwrap_or_default();
 			let args = args.iter().map(|v| v as &str).collect::<Vec<&str>>();
 
-			let cwd = runner.working_dir.as_ref().map(|v| Path::new(v));
+			let cwd = runner.working_dir.as_ref().map(Path::new);
 
-			if runner.concurrent == false {
-				spawn_and_wait(cwd, &cmd_str, args.as_slice(), true)?;
+			if !runner.concurrent {
+				spawn_and_wait(cwd, cmd_str, args.as_slice(), true)?;
 			}
 			// start the concurrent mode and add it in the concurrent watch list
 			else {
@@ -66,7 +69,7 @@ pub async fn run_dev(_sub_cmd: &ArgMatches) -> Result<()> {
 
 	// TODO: Probably need to change that to avoid doing those pollings.
 	//       Might be a different strategy for nix v.s. win.
-	if concurrent_children.len() > 0 {
+	if !concurrent_children.is_empty() {
 		let mut end_all = false;
 
 		let mut sys = System::new();
@@ -75,18 +78,16 @@ pub async fn run_dev(_sub_cmd: &ArgMatches) -> Result<()> {
 			// --- Check if any children is down
 			for (_, child, end_flag) in concurrent_children.iter_mut() {
 				let status = child.try_wait()?;
-				if let Some(_) = status {
-					if *end_flag {
-						end_all = true;
-					}
+				if status.is_some() && *end_flag {
+					end_all = true;
 				}
 			}
 
 			// --- If end_all true, then, we terminate all
 			if end_all {
 				for (name, child, _) in concurrent_children.iter_mut() {
-					if let None = child.try_wait()? {
-						terminate_process_and_children(&mut sys, &name, child).await?
+					if (child.try_wait()?).is_none() {
+						terminate_process_and_children(&mut sys, name, child).await?
 					}
 				}
 				break 'main;
@@ -117,7 +118,7 @@ async fn terminate_process_and_children(sys: &mut System, name: &str, proc: &mut
 
 		// --- Terminate the children
 		for (pid, _) in children {
-			if let Some(process) = sys.process(pid.clone()) {
+			if let Some(process) = sys.process(pid) {
 				let _ = process.kill();
 			}
 		}
@@ -136,7 +137,7 @@ fn find_descendant(processes: &HashMap<Pid, Process>, root_pid: &Pid) -> Vec<(Pi
 		for (pid, p) in processes.iter() {
 			if let Some(parent_pid) = p.parent() {
 				if !children.contains_key(pid) && (parent_pid == *root_pid || children.contains_key(&parent_pid)) {
-					children.insert(pid.clone(), p.name().to_string());
+					children.insert(*pid, p.name().to_string());
 					cycle_has = true;
 				}
 			}

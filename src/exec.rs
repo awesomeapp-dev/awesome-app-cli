@@ -8,7 +8,7 @@ pub fn prompt(message: &str, default: Option<&str>) -> Result<String> {
 	let _ = io::stdout().flush();
 
 	let mut buf = String::new();
-	stdin().read_line(&mut buf).or_else(|_| Err(Error::StdinFailToReadLine))?;
+	stdin().read_line(&mut buf).map_err(|_| Error::StdinFailToReadLine)?;
 
 	let val = buf.trim();
 
@@ -65,7 +65,7 @@ pub fn spawn_output(cwd: Option<&Path>, cmd_str: &str, args: &[&str], print_exec
 			};
 
 			match txt {
-				Err(ex) => Err(Error::ExecError(s!(cmd_str), f!("{ex:?}"))),
+				Err(ex) => Err(Error::Exec(s!(cmd_str), f!("{ex:?}"))),
 				Ok(txt) => Ok(txt),
 			}
 		}

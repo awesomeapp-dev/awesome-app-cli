@@ -12,10 +12,10 @@ pub enum Error {
 	XtakePropNotFound(String),
 
 	#[error("Fail to execute {0} cause: {1}")]
-	ExecError(String, String),
+	Exec(String, String),
 
 	#[error("Config (Awesome.toml) parsing error: {0}")]
-	ConfigParsingError(String),
+	ConfigParsing(String),
 
 	#[error("Path not safe to delete {0}")]
 	PathNotSafeToDelete(String),
@@ -37,6 +37,6 @@ type ExecWithExitStatus<'a> = (&'a str, &'a [&'a str], ExitStatus);
 
 impl<'a> From<ExecWithExitStatus<'a>> for Error {
 	fn from(val: ExecWithExitStatus) -> Self {
-		Error::ExecError(val.0.to_string(), "".to_string())
+		Error::Exec(val.0.to_string(), "".to_string())
 	}
 }

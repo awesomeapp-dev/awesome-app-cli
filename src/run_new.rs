@@ -21,7 +21,7 @@ const FILES: &[&str; 3] = &["package.json", "src-tauri/Tauri.toml", "src-ui/src/
 
 const GIT_DIR: &str = ".git";
 
-const GIT_TMPL_BASE: &'static str = "https://github.com/rust-awesome-app/template-app-base.git";
+const GIT_TMPL_BASE: &str = "https://github.com/rust-awesome-app/template-app-base.git";
 // const GIT_TMPL_MIN: &'static str = "https://github.com/jeremychone/rust-awesome-app-template-min.git";
 
 struct Conf<'a> {
@@ -37,7 +37,10 @@ pub fn run_new(sub_cmd: &ArgMatches) -> Result<()> {
 
 	let app_name = match app_name {
 		Some(name) => name.to_string(),
-		None => prompt(&f!("What is your app name? ({DEFAULT_APP_NAME}): "), Some(DEFAULT_APP_NAME))?,
+		None => prompt(
+			&f!("What is your app name? ({DEFAULT_APP_NAME}): "),
+			Some(DEFAULT_APP_NAME),
+		)?,
 	};
 
 	// --- Get the title
@@ -117,7 +120,7 @@ Happy coding!
 }
 
 fn replace_parts(dir: &Path, conf: Conf) -> Result<()> {
-	let files = FILES.into_iter().map(|f| path_joins(dir, f)).collect::<Vec<_>>();
+	let files = FILES.iter().map(|f| path_joins(dir, f)).collect::<Vec<_>>();
 
 	let patterns = &[DEFAULT_APP_NAME, DEFAULT_WIN_TITLE];
 	let ac = AhoCorasick::new(patterns);
@@ -149,7 +152,7 @@ fn clear_awesome_toml_from_gitignore(content: &str) -> String {
 // region:    --- Utils
 
 fn check_git() -> Result<()> {
-	spawn_output(None, "git", &["--version"], false).or_else(|_| Err(Error::GitNotPresent))?;
+	spawn_output(None, "git", &["--version"], false).map_err(|_| Error::GitNotPresent)?;
 	Ok(())
 }
 // endregion: --- Utils

@@ -7,7 +7,7 @@ use std::fs;
 use std::path::Path;
 use toml::Value;
 
-static AWESOME_TMPL: &'static str = include_str!("../tmpl/Awesome.toml");
+static AWESOME_TMPL: &str = include_str!("../tmpl/Awesome.toml");
 
 const AWESOME_FILE_NAME: &str = "Awesome.toml";
 const SRC_TAURI_DIR: &str = "src-tauri";
@@ -38,7 +38,7 @@ awesome_app_version = "{VERSION}"
 
 	match toml::from_str::<Value>(&toml_str) {
 		Ok(root) => Config::try_from(root),
-		Err(ex) => Err(Error::ConfigParsingError(format!("{}", ex))),
+		Err(ex) => Err(Error::ConfigParsing(format!("{}", ex))),
 	}
 }
 
@@ -62,7 +62,7 @@ impl TryFrom<Value> for Config {
 		.flatten();
 
 		// Option<Result<Vec<Runner>>>
-		let dev_runners = runners_raw.map(|v| v.into_iter().map(|v| Runner::try_from(v)).collect::<Result<Vec<_>>>());
+		let dev_runners = runners_raw.map(|v| v.into_iter().map(Runner::try_from).collect::<Result<Vec<_>>>());
 
 		// Option<Vec<Runner>>
 		let dev_runners = match dev_runners {
@@ -70,7 +70,10 @@ impl TryFrom<Value> for Config {
 			None => None,
 		};
 
-		Ok(Config { cli_version, dev_runners })
+		Ok(Config {
+			cli_version,
+			dev_runners,
+		})
 	}
 }
 

@@ -19,7 +19,7 @@ pub fn safer_remove_dir_all(dir: &Path) -> Result<()> {
 	let dir_str = dir.to_string_lossy();
 
 	DELETE_MUST_CONTAINS_ANY_OF
-		.into_iter()
+		.iter()
 		.find(|v| dir_str.contains(*v))
 		.ok_or_else(|| Error::PathNotSafeToDelete(s!(dir_str)))?;
 
