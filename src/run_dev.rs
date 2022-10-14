@@ -1,91 +1,72 @@
 use crate::config::ensure_config;
-use crate::exec::spawn_and_wait;
 use crate::prelude::*;
 use clap::ArgMatches;
 use std::collections::HashMap;
 use std::path::Path;
 use std::time::Duration;
 use sysinfo::{Pid, PidExt, Process, ProcessExt, ProcessRefreshKind, System, SystemExt};
-use tokio::process::{Child, Command};
+use tokio::process::Child;
 use tokio::time::sleep;
 
 const WATCH_CHILD_DELAY: u64 = 3000; // in ms
 
-#[cfg(target_os = "windows")]
-const NPM_CMD: &str = "npm.cmd";
-#[cfg(not(target_os = "windows"))]
-const NPM_CMD: &str = "npm";
-
 #[tokio::main]
 pub async fn run_dev(_sub_cmd: &ArgMatches) -> Result<()> {
-	// TODO: needs to get it from the params
+	// TODO: needs to get it from the params.
 	let root_dir = Path::new(".");
 
+	// Read or create/read the Awesome.toml config with the dev runners.
 	let config = ensure_config(root_dir)?;
 
-	// (runner_name, child, end_all_on_exit)
-	let mut concurrent_children: Vec<(String, Child, bool)> = Vec::new();
+	// Vec to keep track of the concurrent processes.
+	struct RunnerConcurrentSpawn<'a> {
+		name: &'a str,
+		child: Child,
+		end_all_on_exit: bool,
+	}
+	let mut children_to_watch: Vec<RunnerConcurrentSpawn> = Vec::new();
 
-	if let Some(runners) = config.dev_runners {
-		for runner in runners.into_iter() {
-			let name = &runner.name;
+	// --- Exec each runner.
+	if let Some(runners) = &config.dev_runners {
+		for runner in runners.iter() {
+			// exec the runner.
+			// returns a child if process needs to be track
+			let child = runner.exec().await?;
 
-			println!("==== Running runner: {name}");
-
-			if runner.wait_before > 0 {
-				println!(
-					"Waiting {}ms (from runner {name}.wait_before property)",
-					runner.wait_before
-				);
-				sleep(Duration::from_millis(runner.wait_before)).await;
-			}
-
-			let cmd_str: &str = runner.cmd.as_ref();
-
-			// TODO: Needs to generalize this. Could be more downstream, on ProgramNotFound error.
-			let cmd_str = if cmd_str.starts_with("npm") && cmd_str != NPM_CMD {
-				NPM_CMD
-			} else {
-				cmd_str
-			};
-
-			let args = runner.args.unwrap_or_default();
-			let args = args.iter().map(|v| v as &str).collect::<Vec<&str>>();
-
-			let cwd = runner.working_dir.as_ref().map(Path::new);
-
-			if !runner.concurrent {
-				spawn_and_wait(cwd, cmd_str, args.as_slice(), true)?;
-			}
-			// start the concurrent mode and add it in the concurrent watch list
-			else {
-				let mut cmd = Command::new(&cmd_str);
-				cmd.args(args);
-				let child = cmd.spawn()?;
-				concurrent_children.push((name.to_string(), child, runner.end_all_on_exit));
+			// if concurrent, store for tracking.
+			if let Some(child) = child {
+				children_to_watch.push(RunnerConcurrentSpawn {
+					name: &runner.name,
+					child,
+					end_all_on_exit: runner.end_all_on_exit,
+				});
 			}
 		}
 	}
 
-	// TODO: Probably need to change that to avoid doing those pollings.
-	//       Might be a different strategy for nix v.s. win.
-	if !concurrent_children.is_empty() {
+	// --- Watch processes when concurrent to end_all_on_exit when flagged.
+	// TODO: Probably need to change that to avoid doing polling.
+	//       Strategy: Tokio Spawn for the child with mpsc for the end_all event.
+	if !children_to_watch.is_empty() {
 		let mut end_all = false;
 
 		let mut sys = System::new();
 
 		'main: loop {
-			// --- Check if any children is down
-			for (_, child, end_flag) in concurrent_children.iter_mut() {
+			// --- Check if any children is down.
+			for RunnerConcurrentSpawn {
+				child, end_all_on_exit, ..
+			} in children_to_watch.iter_mut()
+			{
 				let status = child.try_wait()?;
-				if status.is_some() && *end_flag {
+				if status.is_some() && *end_all_on_exit {
 					end_all = true;
 				}
 			}
 
-			// --- If end_all true, then, we terminate all
+			// --- If end_all true, then, we terminate all.
 			if end_all {
-				for (name, child, _) in concurrent_children.iter_mut() {
+				for RunnerConcurrentSpawn { name, child, .. } in children_to_watch.iter_mut() {
 					if (child.try_wait()?).is_none() {
 						terminate_process_and_children(&mut sys, name, child).await?
 					}

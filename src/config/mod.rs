@@ -1,14 +1,18 @@
 //! This is the module Awesome.toml
-
 use crate::prelude::*;
-use crate::utils::{XTake, XTakeVal};
+use crate::utils::XTake;
 use crate::VERSION;
 use std::fs;
 use std::path::Path;
 use toml::Value;
 
-static AWESOME_TMPL: &str = include_str!("../tmpl/Awesome.toml");
+mod runner;
 
+// --- re-exports
+use runner::Runner;
+
+// --- Consts
+const AWESOME_TMPL: &str = include_str!("../../tmpl/Awesome.toml");
 const AWESOME_FILE_NAME: &str = "Awesome.toml";
 const SRC_TAURI_DIR: &str = "src-tauri";
 const PACKAGE_JSON_FILE: &str = "package.json";
@@ -77,44 +81,8 @@ impl TryFrom<Value> for Config {
 	}
 }
 
-#[derive(Debug)]
-pub struct Runner {
-	pub name: String,
-	pub working_dir: Option<String>,
-	pub cmd: String,
-	pub args: Option<Vec<String>>,
-	pub wait_before: u64,      // default to 0
-	pub concurrent: bool,      // default to false
-	pub end_all_on_exit: bool, // default to false
-}
-
-impl TryFrom<Value> for Runner {
-	type Error = Error;
-	fn try_from(mut val: Value) -> Result<Runner> {
-		let name = val.x_take_val::<String>("name")?;
-		let working_dir = val.x_take::<String>("working_dir")?;
-		let cmd = val.x_take_val::<String>("cmd")?;
-		let args = val.x_take::<Vec<String>>("args")?;
-		let wait_before = val.x_take::<u64>("wait_before")?.unwrap_or(0);
-		let concurrent = val.x_take::<bool>("concurrent")?.unwrap_or(false);
-		let end_all_on_exit = val.x_take::<bool>("end_all_on_exit")?.unwrap_or(false);
-
-		// TODO: Error when concurrent = false, and end_all_on_exit = true (would not make much sense)
-
-		Ok(Runner {
-			name,
-			working_dir,
-			wait_before,
-			cmd,
-			args,
-			concurrent,
-			end_all_on_exit,
-		})
-	}
-}
-
 // region:    --- Tests
 #[cfg(test)]
-#[path = "./_tests/tests_config.rs"]
+#[path = "../_tests/tests_config.rs"]
 mod tests;
 // endregion: --- Tests
