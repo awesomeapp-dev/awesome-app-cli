@@ -1,18 +1,22 @@
+use anyhow::Context;
+
 use super::Config;
 use crate::config::AWESOME_TMPL;
-use toml::Value;
 
 #[test]
 fn test_config_parsing() -> anyhow::Result<()> {
-	let config = toml::from_str::<Value>(AWESOME_TMPL)?;
-	let config: Config = Config::try_from(config)?;
-	let runners = config.dev_runners.unwrap();
+	// --- Exec
+	let config = toml::from_str::<Config>(AWESOME_TMPL)?;
 
-	assert_eq!(runners.len(), 7, "number of runners");
+	let dev_runners = config.dev.and_then(|v| v.runners).context("Should have dev runners")?;
 
-	for runner in runners.iter() {
-		assert!(!runner.cmd.is_empty())
-	}
+	// --- Checks
+	// Number of dev runners.
+	assert_eq!(dev_runners.len(), 7, "number of runners");
+
+	// Second runner.
+	let runner = dev_runners.get(1).unwrap(); // Should be the 'tauri_icons'.
+	assert_eq!(runner.name, "tauri_icons");
 
 	Ok(())
 }

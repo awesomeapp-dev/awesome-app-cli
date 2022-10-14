@@ -3,12 +3,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 mod froms;
-mod toml_try_froms;
-mod toml_xtakes;
-mod x_take;
 
 // --- re-exports
-pub use x_take::*;
 
 // region:    --- File & Path Utils
 const DELETE_MUST_CONTAINS_ANY_OF: &[&str; 1] = &[".git"];

@@ -1,4 +1,4 @@
-use crate::config::ensure_config;
+use crate::config::ensure_awesome_toml;
 use crate::exec::{prompt, spawn_and_wait, spawn_output};
 use crate::prelude::*;
 use crate::utils::{path_joins, safer_remove_dir_all};
@@ -82,7 +82,7 @@ pub fn run_new(sub_cmd: &ArgMatches) -> Result<()> {
 	)?;
 
 	// --- Add the Awesome.toml
-	ensure_config(app_dir)?;
+	ensure_awesome_toml(app_dir)?;
 
 	// --- Remove the git folder
 	let git_dir = app_dir.join(GIT_DIR);

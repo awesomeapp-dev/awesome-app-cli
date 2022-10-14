@@ -5,23 +5,23 @@
 # Note 2: end_all_on_exit = true, for concurrent runners tells to end the session if this specific process ends.
 # Note 3: Eventually, [[runners.build]] will also be available. Splitting the two makes it less convoluted and more flexible.
 
-[[runners.dev]]
+[[dev.runners]]
 name = "npm_install"
 cmd = "npm"
 args = ["install"]
 
-[[runners.dev]]
+[[dev.runners]]
 name = "tauri_icons"
 cmd = "npm"
 args = ["run", "tauri", "icon", "src-tauri/icons/app-icon.png"]
 
-[[runners.dev]]
+[[dev.runners]]
 name = "cargo_build"
 working_dir = "src-tauri/"
 cmd = "cargo"
 args = ["build"]
 
-[[runners.dev]]
+[[dev.runners]]
 name = "pcss"
 cmd = "npm"
 args = ["run", "pcss", "--", "-w"]
@@ -29,21 +29,21 @@ concurrent = true
 # if this process exit, end the dev session
 end_all_on_exit = true
 
-[[runners.dev]]
+[[dev.runners]]
 name = "rollup"
 cmd = "npm"
 args = ["run", "rollup", "--", "-w"]
 concurrent = true
 end_all_on_exit = true
 
-[[runners.dev]]
+[[dev.runners]]
 name = "localhost"
 cmd = "npm"
 args = ["run", "localhost"]
 concurrent = true
 end_all_on_exit = true
 
-[[runners.dev]]
+[[dev.runners]]
 name = "tauri_dev"
 wait_before = 2000 # wait in ms, before getting called
 cmd = "npm"

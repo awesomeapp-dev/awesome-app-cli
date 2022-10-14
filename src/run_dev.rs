@@ -1,4 +1,4 @@
-use crate::config::ensure_config;
+use crate::config::ensure_awesome_toml;
 use crate::prelude::*;
 use clap::ArgMatches;
 use std::collections::HashMap;
@@ -16,27 +16,27 @@ pub async fn run_dev(_sub_cmd: &ArgMatches) -> Result<()> {
 	let root_dir = Path::new(".");
 
 	// Read or create/read the Awesome.toml config with the dev runners.
-	let config = ensure_config(root_dir)?;
+	let config = ensure_awesome_toml(root_dir)?;
 
 	// Vec to keep track of the concurrent processes.
-	struct RunnerConcurrentSpawn<'a> {
-		name: &'a str,
+	struct RunnerConcurrentSpawn {
+		name: String,
 		child: Child,
 		end_all_on_exit: bool,
 	}
 	let mut children_to_watch: Vec<RunnerConcurrentSpawn> = Vec::new();
 
 	// --- Exec each runner.
-	if let Some(runners) = &config.dev_runners {
+	if let Some(runners) = config.dev.and_then(|v| v.runners) {
 		for runner in runners.iter() {
 			// exec the runner.
-			// returns a child if process needs to be track
+			// returns a child if process is concurrent.
 			let child = runner.exec().await?;
 
 			// if concurrent, store for tracking.
 			if let Some(child) = child {
 				children_to_watch.push(RunnerConcurrentSpawn {
-					name: &runner.name,
+					name: runner.name.to_string(),
 					child,
 					end_all_on_exit: runner.end_all_on_exit,
 				});

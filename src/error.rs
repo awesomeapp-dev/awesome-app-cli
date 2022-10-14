@@ -5,17 +5,8 @@ pub enum Error {
 	#[error("This directory does not seem to be a awesome-app directory. Make sure to run awesome-app from the root project directory.")]
 	DirNotValid,
 
-	#[error("Value not of type '{0}'")]
-	XintoNotOfType(&'static str),
-
-	#[error("Property {0} not found")]
-	XtakePropNotFound(String),
-
 	#[error("Fail to execute {0} cause: {1}")]
 	Exec(String, String),
-
-	#[error("Config (Awesome.toml) parsing error: {0}")]
-	ConfigParsing(String),
 
 	#[error("Path not safe to delete {0}")]
 	PathNotSafeToDelete(String),
@@ -25,6 +16,12 @@ pub enum Error {
 
 	#[error("git command line not found. Required for awesome-app.")]
 	GitNotPresent,
+
+	#[error("Fail to parse Awesome.toml. Cause: {0}")]
+	FailParsingConfig(toml::de::Error),
+
+	#[error("Awesome.toml does not seem to be valid.")]
+	AwesomeTomlInvalid,
 
 	#[error("Fail to read line")]
 	StdinFailToReadLine,

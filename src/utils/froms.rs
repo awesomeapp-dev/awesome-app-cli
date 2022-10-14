@@ -1,4 +1,4 @@
-//! Various From implementations with the W() new type pattern
+//! Various From implementations with the W() new type pattern.
 //!
 
 use crate::prelude::*;
