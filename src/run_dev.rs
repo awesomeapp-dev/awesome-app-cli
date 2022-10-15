@@ -29,11 +29,13 @@ pub async fn run_dev(_sub_cmd: &ArgMatches) -> Result<()> {
 	// --- Exec each runner.
 	if let Some(runners) = config.dev.and_then(|v| v.runners) {
 		for runner in runners.iter() {
+			println!("==== Running runner: {}", runner.name);
+
 			// exec the runner.
 			// returns a child if process is concurrent.
 			let child = runner.exec().await?;
 
-			// if concurrent, store for tracking.
+			// if concurrent, keep an eye on this child.
 			if let Some(child) = child {
 				children_to_watch.push(RunnerConcurrentSpawn {
 					name: runner.name.to_string(),
@@ -68,7 +70,7 @@ pub async fn run_dev(_sub_cmd: &ArgMatches) -> Result<()> {
 			if end_all {
 				for RunnerConcurrentSpawn { name, child, .. } in children_to_watch.iter_mut() {
 					if (child.try_wait()?).is_none() {
-						terminate_process_and_children(&mut sys, name, child).await?
+						terminate_process_tree(&mut sys, name, child).await?
 					}
 				}
 				break 'main;
@@ -81,15 +83,15 @@ pub async fn run_dev(_sub_cmd: &ArgMatches) -> Result<()> {
 	Ok(())
 }
 
-// NOTE: For now just one level down.
-async fn terminate_process_and_children(sys: &mut System, name: &str, proc: &mut Child) -> Result<()> {
+/// Terminate this process and all of its children.
+async fn terminate_process_tree(sys: &mut System, name: &str, proc: &mut Child) -> Result<()> {
 	if let Some(proc_id) = proc.id() {
 		let proc_pid = Pid::from_u32(proc_id);
 
 		// --- Fetch the children
 		sys.refresh_processes_specifics(ProcessRefreshKind::everything().without_cpu());
-		let processes = sys.processes();
-		let children = find_descendant(processes, &proc_pid);
+		let sys_processes = sys.processes();
+		let children = find_descendant(sys_processes, &proc_pid);
 
 		// --- Terminate the parent
 		match proc.kill().await {
@@ -108,14 +110,14 @@ async fn terminate_process_and_children(sys: &mut System, name: &str, proc: &mut
 	Ok(())
 }
 
-fn find_descendant(processes: &HashMap<Pid, Process>, root_pid: &Pid) -> Vec<(Pid, String)> {
+fn find_descendant(sys_processes: &HashMap<Pid, Process>, root_pid: &Pid) -> Vec<(Pid, String)> {
 	let mut children: HashMap<Pid, String> = HashMap::new();
 
-	// NOTE: For now, probably going a little brute force, but this should be exhaustive
+	// NOTE: For now, going a little brute force, but this should be exhaustive
 	//       and does not really have significant performance impact for the usecase.
 	'main: loop {
 		let mut cycle_has = false;
-		for (pid, p) in processes.iter() {
+		for (pid, p) in sys_processes.iter() {
 			if let Some(parent_pid) = p.parent() {
 				if !children.contains_key(pid) && (parent_pid == *root_pid || children.contains_key(&parent_pid)) {
 					children.insert(*pid, p.name().to_string());

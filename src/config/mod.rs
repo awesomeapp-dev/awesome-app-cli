@@ -9,7 +9,7 @@ use std::path::Path;
 mod runner;
 
 // --- re-exports
-use runner::Runner;
+pub use runner::*; // Wide for now.
 
 // --- Consts
 const AWESOME_TMPL: &str = include_str!("../../tmpl/Awesome.toml");
@@ -17,16 +17,19 @@ const AWESOME_FILE_NAME: &str = "Awesome.toml";
 const SRC_TAURI_DIR: &str = "src-tauri";
 const PACKAGE_JSON_FILE: &str = "package.json";
 
-#[derive(Debug, Deserialize)]
-pub struct Dev {
-	pub runners: Option<Vec<Runner>>,
-}
-
+// --- Config Types
 #[derive(Debug, Deserialize)]
 pub struct Config {
 	pub cli_version: Option<String>,
 	pub dev: Option<Dev>,
 }
+
+#[derive(Debug, Deserialize)]
+pub struct Dev {
+	pub runners: Option<Vec<Runner>>,
+}
+
+// --- Awesome.toml generator / parser
 
 pub fn ensure_awesome_toml(root_dir: &Path) -> Result<Config> {
 	// --- Check that we run in the root folder.
@@ -34,13 +37,13 @@ pub fn ensure_awesome_toml(root_dir: &Path) -> Result<Config> {
 		return Err(Error::DirNotValid);
 	}
 
-	// --- Check
+	// --- Create if not present.
 	let awesome_file = root_dir.join(AWESOME_FILE_NAME);
-
 	if !awesome_file.is_file() {
 		create_awesome_toml(&awesome_file)?;
 	}
 
+	// --- Load and validate.
 	let toml_str = fs::read_to_string(&awesome_file)?;
 	parse_awesome_toml(&toml_str).or_else(|_| {
 		let res = prompt(
@@ -56,7 +59,7 @@ pub fn ensure_awesome_toml(root_dir: &Path) -> Result<Config> {
 			fs::copy(&awesome_file, old_file)?;
 			println!("Backup not working Awesome.toml as '{backup_file_name}'");
 
-			// Create the ew Awesome.toml
+			// Create the new Awesome.toml
 			println!("Creating new Awesome.toml");
 			create_awesome_toml(&awesome_file)?;
 			let toml_str = fs::read_to_string(&awesome_file)?;

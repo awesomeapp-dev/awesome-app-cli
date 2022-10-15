@@ -9,18 +9,22 @@ use tokio::time::sleep;
 #[derive(Debug, Deserialize)]
 pub struct Runner {
 	pub name: String,
+
 	pub working_dir: Option<String>,
 	pub cmd: String,
 	pub args: Option<Vec<String>>,
+
 	#[serde(default)]
-	pub wait_before: u64, // default to 0
+	pub wait_before: u64,
+
 	#[serde(default)]
-	pub concurrent: bool, // default to false
+	pub concurrent: bool,
+
 	#[serde(default)]
-	pub end_all_on_exit: bool, // default to false
+	pub end_all_on_exit: bool,
 }
 
-// region:    --- Executor
+// region:    --- Runner Impl
 #[cfg(target_os = "windows")]
 const NPM_CMD: &str = "npm.cmd";
 #[cfg(not(target_os = "windows"))]
@@ -28,15 +32,11 @@ const NPM_CMD: &str = "npm";
 
 impl Runner {
 	pub async fn exec(&self) -> Result<Option<Child>> {
-		let name = &self.name;
-
-		println!("==== Running runner: {name}");
-
 		// --- Process the wait_before.
 		if self.wait_before > 0 {
 			println!(
-				"Waiting {}ms (from runner {name}.wait_before property)",
-				self.wait_before
+				"Waiting {}ms (from runner {}.wait_before property)",
+				self.wait_before, self.name
 			);
 			sleep(Duration::from_millis(self.wait_before)).await;
 		}
@@ -69,4 +69,4 @@ impl Runner {
 		}
 	}
 }
-// endregion: --- Executor
+// endregion: --- Runner Impl
