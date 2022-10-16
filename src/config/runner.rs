@@ -14,6 +14,8 @@ pub struct Runner {
 	pub cmd: String,
 	pub args: Option<Vec<String>>,
 
+	pub when: Option<When>,
+
 	#[serde(default)]
 	pub wait_before: u64,
 
@@ -22,6 +24,11 @@ pub struct Runner {
 
 	#[serde(default)]
 	pub end_all_on_exit: bool,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct When {
+	no_file_at: Option<String>,
 }
 
 // region:    --- Runner Impl
@@ -68,5 +75,23 @@ impl Runner {
 			Ok(Some(child))
 		}
 	}
+
+	pub fn should_run(&self, root_dir: &Path) -> Result<ShouldRun> {
+		let no_file_at = self.when.as_ref().and_then(|w| w.no_file_at.as_ref());
+
+		if let Some(no_file_at) = no_file_at {
+			let no_file = root_dir.join(no_file_at);
+			if Path::exists(&no_file) {
+				return Ok(ShouldRun::No(f!("Path '{no_file_at}' found.")));
+			}
+		}
+
+		Ok(ShouldRun::Yes)
+	}
+}
+
+pub enum ShouldRun {
+	Yes,
+	No(String), // reason
 }
 // endregion: --- Runner Impl

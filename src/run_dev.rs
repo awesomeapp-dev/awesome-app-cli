@@ -1,4 +1,4 @@
-use crate::config::ensure_awesome_toml;
+use crate::config::{ensure_awesome_toml, ShouldRun};
 use crate::prelude::*;
 use clap::ArgMatches;
 use std::collections::HashMap;
@@ -31,17 +31,22 @@ pub async fn run_dev(_sub_cmd: &ArgMatches) -> Result<()> {
 		for runner in runners.iter() {
 			println!("==== Running runner: {}", runner.name);
 
-			// exec the runner.
-			// returns a child if process is concurrent.
-			let child = runner.exec().await?;
+			match runner.should_run(root_dir)? {
+				ShouldRun::No(reason) => println!("Skip running runner '{}' because {reason}", runner.name),
+				ShouldRun::Yes => {
+					// exec the runner.
+					// returns a child if process is concurrent.
+					let child = runner.exec().await?;
 
-			// if concurrent, keep an eye on this child.
-			if let Some(child) = child {
-				children_to_watch.push(RunnerConcurrentSpawn {
-					name: runner.name.to_string(),
-					child,
-					end_all_on_exit: runner.end_all_on_exit,
-				});
+					// if concurrent, keep an eye on this child.
+					if let Some(child) = child {
+						children_to_watch.push(RunnerConcurrentSpawn {
+							name: runner.name.to_string(),
+							child,
+							end_all_on_exit: runner.end_all_on_exit,
+						});
+					}
+				}
 			}
 		}
 	}

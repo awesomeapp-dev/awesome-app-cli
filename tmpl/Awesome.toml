@@ -12,6 +12,7 @@ args = ["install"]
 
 [[dev.runners]]
 name = "tauri_icons"
+when.no_file_at = "src-tauri/icons/32x32.png"
 cmd = "npm"
 args = ["run", "tauri", "icon", "src-tauri/icons/app-icon.png"]
 
