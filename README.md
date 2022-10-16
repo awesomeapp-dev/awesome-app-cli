@@ -21,5 +21,6 @@ Create your first app:
 > awesome-app dev
 
 # Once done, open `my-app/` in your Coding Environment (e.g., VSCode)
+
 # Happy Coding!
 ```
