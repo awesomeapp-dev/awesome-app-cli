@@ -24,3 +24,6 @@ Create your first app:
 
 # Happy Coding!
 ```
+
+<br />
+[This repo on GitHub](https://github.com/awesomeapp-dev/awesome-app-cli))

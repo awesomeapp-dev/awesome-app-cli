@@ -123,7 +123,8 @@ fn replace_parts(dir: &Path, conf: Conf) -> Result<()> {
 	let files = FILES.iter().map(|f| path_joins(dir, f)).collect::<Vec<_>>();
 
 	let patterns = &[DEFAULT_APP_NAME, DEFAULT_WIN_TITLE];
-	let ac = AhoCorasick::new(patterns);
+	// TODO: unwrap safety check.
+	let ac = AhoCorasick::new(patterns).unwrap();
 	let replace_by = &[conf.app_name, conf.win_title];
 
 	for file in files {

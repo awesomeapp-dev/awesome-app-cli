@@ -69,7 +69,7 @@ impl Runner {
 		}
 		// start the concurrent mode and add it in the concurrent watch list.
 		else {
-			let mut cmd = Command::new(&cmd_str);
+			let mut cmd = Command::new(cmd_str);
 			cmd.args(args);
 			let child = cmd.spawn()?;
 			Ok(Some(child))

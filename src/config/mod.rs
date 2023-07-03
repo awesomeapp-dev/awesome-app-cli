@@ -82,7 +82,7 @@ awesome_app_version = "{VERSION}"
 	));
 	content.push_str(AWESOME_TMPL);
 
-	fs::write(&awesome_file, &content)?;
+	fs::write(awesome_file, &content)?;
 
 	Ok(())
 }
