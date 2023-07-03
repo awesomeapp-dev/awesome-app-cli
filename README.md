@@ -1,6 +1,6 @@
 ## Rust CLI to create Awesome Applications with Rust.
 
-More info at [awesomeapp.org](https://awesomeapp.org)
+More info at [awesomeapp.dev](https://awesomeapp.dev)
 
 Install
 
@@ -26,4 +26,4 @@ Create your first app:
 ```
 
 <br />
-[This repo on GitHub](https://github.com/awesomeapp-dev/awesome-app-cli))
+[This repo on GitHub](https://github.com/awesomeapp-dev/awesome-app-cli)
